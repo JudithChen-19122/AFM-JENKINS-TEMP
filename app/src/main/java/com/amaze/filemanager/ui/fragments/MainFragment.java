@@ -690,6 +690,8 @@ public class MainFragment extends Fragment
                   requireMainActivity(), copies1, mainFragmentViewModel.getCurrentPath());
               mode.finish();
               return true;
+
+
             case R.id.openwith:
               FileUtils.openFile(
                   new File(checkedItems.get(0).desc), requireMainActivity(), sharedPref);
@@ -762,6 +764,68 @@ public class MainFragment extends Fragment
   public void home() {
     loadlist((mainFragmentViewModel.getHome()), false, OpenMode.FILE);
   }
+
+  public void check_homepath(MainActivity mainActivity,MainFragment mainFragment){
+    MaterialDialog dialog_check_home_path =
+            GeneralDialogCreation.showNameDialog(
+                    mainActivity,
+                    "",
+                    mainFragment.getMainFragmentViewModel().getHome(),
+                    "Check Home Path",
+                    "ok",
+                    null,
+                    null,
+                    (dialog,which) -> {
+                      dialog.dismiss();
+                    },
+                    (text) -> {
+                      return new WarnableTextInputValidator.ReturnState();
+                    }
+
+            );
+  }
+  
+  public void set_homepath(MainActivity mainActivity){
+    MaterialDialog dialog_set_home_path =
+            GeneralDialogCreation.showNameDialog(
+                    mainActivity,
+                    "",
+                    this.getCurrentPath(),
+                    "Set Home Path",
+                    "Set",
+                    null,
+                    "Cancle",
+                    (dialog,which) -> {
+                      // gain target EditText
+                      EditText text_for_path = dialog.getCustomView().findViewById(R.id.singleedittext_input);
+                      String new_path_of_home = text_for_path.getText().toString();
+                      File target_f = new File(new_path_of_home);
+                      if(target_f.exists() && target_f.isDirectory()) {
+                        this
+                                .getMainFragmentViewModel()
+                                .setHome(new_path_of_home);
+                        mainActivity.updatePaths(this.getMainFragmentViewModel().getNo());
+                      }
+                      dialog.dismiss();
+                    },
+                    (text) -> {
+                      File target_fx = new File(text);
+                      if(!target_fx.exists())
+                        return new WarnableTextInputValidator.ReturnState(
+                                WarnableTextInputValidator.ReturnState.STATE_ERROR,
+                                R.string.error_file_not_found);
+                      else if(!target_fx.isDirectory())
+                        return new WarnableTextInputValidator.ReturnState(
+                                WarnableTextInputValidator.ReturnState.STATE_ERROR,
+                                R.string.error_is_not_directory);
+                      else
+                        return new WarnableTextInputValidator.ReturnState();
+                    }
+
+            );
+  }
+
+
 
   /**
    * method called when list item is clicked in the adapter
